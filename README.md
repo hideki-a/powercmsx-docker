@@ -137,6 +137,8 @@ PHP_VERSION=8.3 docker compose build
 
 切り替えは `.env` の `PHP_VERSION` を書き換えて `docker compose up -d` するだけです（再ビルド不要）。
 
+> **注意:** `-fpm-bookworm` タグは PHP 8.1 以降で利用可能です。8.0 以前は `Dockerfile` の `-bookworm` を `-bullseye` に手動で書き換えてください。
+
 ---
 
 ## cron
