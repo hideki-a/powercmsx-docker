@@ -145,8 +145,9 @@ RUN ldconfig
 # supercronic (cron コンテナ用)
 # ----------------------------------------------------------------
 ARG SUPERCRONIC_VERSION=0.2.33
+ARG TARGETARCH
 RUN curl -fsSLo /usr/local/bin/supercronic \
-        "https://github.com/aptible/supercronic/releases/download/v${SUPERCRONIC_VERSION}/supercronic-linux-amd64" \
+        "https://github.com/aptible/supercronic/releases/download/v${SUPERCRONIC_VERSION}/supercronic-linux-${TARGETARCH}" \
     && chmod +x /usr/local/bin/supercronic
 
 # ----------------------------------------------------------------
