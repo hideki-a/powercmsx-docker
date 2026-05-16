@@ -3,7 +3,8 @@
 # Compiles QDBM, Hyper Estraier, MeCab, and all PHP extensions.
 # Build tools stay in this stage and never reach the final image.
 # ================================================================
-FROM php:8.3-fpm-bookworm AS builder
+ARG PHP_VERSION=8.3
+FROM php:${PHP_VERSION}-fpm-bookworm AS builder
 
 # ----------------------------------------------------------------
 # Build dependencies (compiler, headers – builder stage only)
@@ -96,10 +97,11 @@ RUN git clone https://github.com/ranvis/php-mecab.git /tmp/php-mecab \
 
 # ================================================================
 # Stage 2: final
-# Clean php:8.3-fpm base + only runtime artifacts copied from builder.
+# Clean php:${PHP_VERSION}-fpm base + only runtime artifacts copied from builder.
 # No compiler, no *-dev headers.
 # ================================================================
-FROM php:8.3-fpm-bookworm AS final
+ARG PHP_VERSION=8.3
+FROM php:${PHP_VERSION}-fpm-bookworm AS final
 
 # ----------------------------------------------------------------
 # Runtime libraries only (no -dev, no build tools)

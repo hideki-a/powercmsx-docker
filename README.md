@@ -7,7 +7,7 @@ PowerCMS X をローカルで動かすための Docker Compose 構成です。
 | サービス | イメージ | URL / ポート |
 |---|---|---|
 | Apache | `httpd:2.4-bookworm` | http://localhost/ |
-| PHP-FPM | `php:8.3-fpm-bookworm` | – |
+| PHP-FPM | `php:${PHP_VERSION}-fpm-bookworm` | – |
 | Cron | php-fpm イメージを流用 | – |
 | MySQL | `mysql:8.4` | localhost:3306 |
 | Redis | `redis:7-alpine` | localhost:6379 |
@@ -112,6 +112,30 @@ docker compose logs -f [サービス名]
 # php.ini などを変更した後の再ビルド
 docker compose build php-fpm && docker compose up -d php-fpm
 ```
+
+---
+
+## PHP バージョンの切り替え
+
+`.env` の `PHP_VERSION` を変更して再ビルドするだけです。
+
+```bash
+# .env を編集
+PHP_VERSION=8.2
+
+# 再ビルド・再起動
+docker compose up --build -d
+```
+
+複数バージョンをローカルに保持しておきたい場合は、バージョンごとにビルドしておきます。
+
+```bash
+PHP_VERSION=8.1 docker compose build
+PHP_VERSION=8.2 docker compose build
+PHP_VERSION=8.3 docker compose build
+```
+
+切り替えは `.env` の `PHP_VERSION` を書き換えて `docker compose up -d` するだけです（再ビルド不要）。
 
 ---
 

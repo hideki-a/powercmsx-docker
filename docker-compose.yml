@@ -46,7 +46,9 @@ services:
     build:
       context: ./docker/php-fpm
       dockerfile: Dockerfile
-    image: powercmsx-php-fpm:local
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.3}
+    image: powercmsx-php-fpm:${PHP_VERSION:-8.3}
     pull_policy: never
     environment:
       APP_ENV: development
@@ -80,10 +82,12 @@ services:
   # Cron (supercronic – php-fpm イメージを流用)
   # ----------------------------------------------------------------
   cron:
-    image: powercmsx-php-fpm:local
+    image: powercmsx-php-fpm:${PHP_VERSION:-8.3}
     build:
       context: ./docker/php-fpm
       dockerfile: Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.3}
     pull_policy: never
     entrypoint: ["/usr/local/bin/supercronic", "/etc/cron.d/powercmsx"]
     environment:
