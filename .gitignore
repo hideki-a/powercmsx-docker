@@ -1,7 +1,6 @@
 # 認証情報・環境設定
 .env
-.env.*
-!.env.*.example
+!.env.example
 
 # PowerCMS X ソース・公開ファイル（手動配置のため）
 src/*
