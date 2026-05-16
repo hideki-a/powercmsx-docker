@@ -1,0 +1,186 @@
+# ================================================================
+# PowerCMS X – ローカル開発環境
+#
+#   apache      → httpd:2.4        http://localhost/
+#   php-fpm     → php:8.3-fpm
+#   cron        → supercronic (php-fpm イメージを流用)
+#   mysql       → MySQL 8.4        localhost:3306
+#   redis       → Redis 7          localhost:6379
+#   phpmyadmin  → phpMyAdmin        http://localhost:8080/
+# ================================================================
+
+services:
+
+  # ----------------------------------------------------------------
+  # Apache (web / static file server)
+  # ----------------------------------------------------------------
+  apache:
+    build:
+      context: ./docker/apache
+      dockerfile: Dockerfile
+    image: powercmsx-apache:local
+    pull_policy: never
+    ports:
+      - "80:80"
+    environment:
+      PHP_FPM_HOST: php-fpm
+    volumes:
+      - ./html:/var/www/html:ro
+      - ./src:/var/www/powercmsx:ro
+    depends_on:
+      - php-fpm
+    networks:
+      - frontend
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ----------------------------------------------------------------
+  # PHP-FPM (application server)
+  # ----------------------------------------------------------------
+  php-fpm:
+    build:
+      context: ./docker/php-fpm
+      dockerfile: Dockerfile
+    image: powercmsx-php-fpm:local
+    pull_policy: never
+    environment:
+      APP_ENV: development
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      PHP_SESSION_SAVE_PATH: "tcp://redis:${REDIS_PORT:-6379}"
+    volumes:
+      - ./src:/var/www/powercmsx
+      - ./html:/var/www/html
+      - ./blob:/var/www/blob
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "php-fpm", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ----------------------------------------------------------------
+  # Cron (supercronic – php-fpm イメージを流用)
+  # ----------------------------------------------------------------
+  cron:
+    image: powercmsx-php-fpm:local
+    build:
+      context: ./docker/php-fpm
+      dockerfile: Dockerfile
+    pull_policy: never
+    entrypoint: ["/usr/local/bin/supercronic", "/etc/cron.d/powercmsx"]
+    environment:
+      APP_ENV: development
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+    volumes:
+      - ./src:/var/www/powercmsx
+      - ./html:/var/www/html
+      - ./blob:/var/www/blob
+      - ./docker/cron/crontab:/etc/cron.d/powercmsx:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------
+  # MySQL 8.4
+  # ----------------------------------------------------------------
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/powercmsx.cnf:ro
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ----------------------------------------------------------------
+  # phpMyAdmin (local development only)
+  # ----------------------------------------------------------------
+  phpmyadmin:
+    image: phpmyadmin:5
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------
+  # Redis 7
+  # ----------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "127.0.0.1:6379:6379"
+
+# ----------------------------------------------------------------
+# Volumes
+# ----------------------------------------------------------------
+volumes:
+  mysql_data:
+  redis_data:
+
+# ----------------------------------------------------------------
+# Networks
+# ----------------------------------------------------------------
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

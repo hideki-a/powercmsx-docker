@@ -1,0 +1,8 @@
+# PowerCMS X crontab
+# 書式: 分 時 日 月 曜日   コマンド
+#
+# ログは docker compose logs cron で確認できます
+# ファイル変更を自動検知しないため、docker compose restart cron が必要です
+
+# 定期タスク（スケジュール投稿・キャッシュ更新など）毎分実行
+*/10 * * * * cd /var/www/powercmsx; php ./tools/worker.php >> /proc/1/fd/1 2>&1

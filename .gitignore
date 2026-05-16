@@ -1,0 +1,22 @@
+# 認証情報・環境設定
+.env
+.env.*
+!.env.*.example
+
+# PowerCMS X ソース・公開ファイル（手動配置のため）
+src/*
+!src/.gitkeep
+html/*
+!html/.gitkeep
+blob/*
+!blob/.gitkeep
+
+# ローカル設定ファイル
+*.local
+.rds/
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
