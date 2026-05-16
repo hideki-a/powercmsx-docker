@@ -147,3 +147,15 @@ PHP_VERSION=8.3 docker compose build
 docker compose restart cron
 docker compose logs -f cron
 ```
+
+## 補足
+
+### Apache バージョンを取得するタグの修正
+
+Apache と php-fpm が別コンテナのため、下記のようにタグを修正する必要があります。
+
+```
+<mt:property name="apache_version" setvar="apache_version">
+   ↓
+<mt:setvar name="apache_version" value="24">
+```
