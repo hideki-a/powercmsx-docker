@@ -164,11 +164,11 @@ COPY php-fpm.conf /usr/local/etc/php-fpm.d/zz-powercmsx.conf
 # ----------------------------------------------------------------
 # Application directories
 # ----------------------------------------------------------------
-RUN mkdir -p /var/www/powercmsx /var/www/html /var/www/tmp /var/www/work \
+RUN mkdir -p /var/www/powercmsx /var/www/html /var/www/tmp /var/www/work /var/www/blob \
     && chown -R www-data:www-data /var/www
 
 WORKDIR /var/www/powercmsx
 
-VOLUME ["/var/www/powercmsx", "/var/www/html"]
+VOLUME ["/var/www/powercmsx", "/var/www/html", "/var/www/blob"]
 
 EXPOSE 9000
