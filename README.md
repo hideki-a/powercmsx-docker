@@ -32,6 +32,8 @@ PowerCMS X をローカルで動かすための Docker Compose 構成です。
 
 PHP 拡張: `bcmath`, `calendar`, `exif`, `gd`, `intl`, `mbstring`, `mysqli`, `opcache`, `pdo`, `pdo_mysql`, `soap`, `zip`, `redis`, `mecab`
 
+> OPcache はコード変更を即反映するため無効化しています（`opcache.enable = 0`）。
+
 ---
 
 ## セットアップ
