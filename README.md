@@ -68,6 +68,11 @@ define( 'PADO_DB_PORT',     getenv( 'DB_PORT' )     ?: '3306' );
 "cfg_admin_url" : "http://localhost/powercmsx/index.php",
 "temp_dir" : "/var/www/tmp",
 "work_dir" : "/var/www/work",
+```
+
+`config_settings` で以下のようにすると Redis も利用できます。
+
+```json
 "cache_driver" : "Redis",
 "memcached_servers": [
     "redis:6379"
@@ -89,7 +94,7 @@ docker compose logs -f
 | URL | 内容 |
 |---|---|
 | http://localhost/ | 静的 HTML（`./html/`） |
-| http://localhost/powercmsx/ | PowerCMS X 管理画面 |
+| http://localhost/powercmsx/index.php | PowerCMS X 管理画面 |
 | http://localhost:8080/ | phpMyAdmin |
 
 ---
