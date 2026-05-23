@@ -4,6 +4,7 @@
 # Build tools stay in this stage and never reach the final image.
 # ================================================================
 ARG PHP_VERSION=8.3
+ARG NODE_VERSION=22
 FROM php:${PHP_VERSION}-fpm-bookworm AS builder
 
 # ----------------------------------------------------------------
@@ -96,7 +97,12 @@ RUN git clone https://github.com/ranvis/php-mecab.git /tmp/php-mecab \
     && rm -rf /tmp/php-mecab
 
 # ================================================================
-# Stage 2: final
+# Stage 2: node (ARG変数を COPY --from に使えないための中間ステージ)
+# ================================================================
+FROM node:${NODE_VERSION}-slim AS node-source
+
+# ================================================================
+# Stage 3: final
 # Clean php:${PHP_VERSION}-fpm base + only runtime artifacts copied from builder.
 # No compiler, no *-dev headers.
 # ================================================================
@@ -127,6 +133,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Misc
     procps \
     curl \
+    libimage-exiftool-perl \
+    poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # ----------------------------------------------------------------
@@ -154,6 +162,14 @@ RUN curl -fsSLo /usr/local/bin/supercronic \
 # Composer
 # ----------------------------------------------------------------
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+# ----------------------------------------------------------------
+# Node.js + pnpm (corepack 経由)
+# ----------------------------------------------------------------
+COPY --from=node-source /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-source /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/corepack/dist/corepack.js /usr/local/bin/corepack \
+    && corepack enable pnpm
 
 # ----------------------------------------------------------------
 # PHP configuration

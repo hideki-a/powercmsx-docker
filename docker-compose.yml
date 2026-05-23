@@ -48,6 +48,7 @@ services:
       dockerfile: Dockerfile
       args:
         PHP_VERSION: ${PHP_VERSION:-8.3}
+        NODE_VERSION: ${NODE_VERSION:-22}
     image: powercmsx-php-fpm:${PHP_VERSION:-8.3}
     pull_policy: never
     environment:
@@ -88,6 +89,7 @@ services:
       dockerfile: Dockerfile
       args:
         PHP_VERSION: ${PHP_VERSION:-8.3}
+        NODE_VERSION: ${NODE_VERSION:-22}
     pull_policy: never
     entrypoint: ["/usr/local/bin/supercronic", "/etc/cron.d/powercmsx"]
     environment:
